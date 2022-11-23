@@ -61,7 +61,7 @@ ap.add_argument("--new", '-n', action='store_true', help="New transaction/group"
 
 ap.add_argument("--update", '-u', action='store_true', help="Update transaction/group")
 
-args = ap.parse_args()
+#args = ap.parse_args()
 #----------------------------------------------
 
 # ----------------------------------------------
@@ -69,7 +69,7 @@ args = ap.parse_args()
 def warn(message) -> None:
     sys.stderr.write("{}: {} \n".format(script_name, message))
 # -------------------------------------------------
-
+print(today)
 class Transaction:
     def __init__(self, id:int, trans_type:int, repeat:int, amount:int, date: str=today, description: Union[str, None]=None, gid: Optional[int]=None) -> None:
         self.id = id
@@ -178,27 +178,31 @@ class Account:
         return ids[-1]+1
 
     def add_group(self, group: Group) -> None:
-        self.conn.execute("INSERT INTO groups (id, name, description) VALUES ({}, {}, {})".format(group.id, group.name, group.description))
+        self.conn.execute("INSERT INTO groups (id, name, description) VALUES ({}, '{}', '{}')".format(group.id, group.name, group.description))
         self.conn.commit()
     
     def update_group(self, group: Group) -> None:
-        self.conn.execute("UPDATE groups SET name = {}, description = {} WHERE id = {}".format(group.name, group.description, group.id))
+        self.conn.execute("UPDATE groups SET name = '{}', description = '{}' WHERE id = {}".format(group.name, group.description, group.id))
         self.conn.commit()
     
     def delete_group(self, group: Group):
-        self.conn.execute("DELETE FROM groups WHERE id ="+group.id)
+        self.conn.execute("DELETE FROM groups WHERE id ="+str(group.id))
         self.conn.commit()
     
     def add_transaction(self, transaction: Transaction) -> None:
-        self.conn.execute("INSERT INTO transactions (id, date, description, type, repeat, amount, gid) VALUES ({}, {}, {}, {}, {}, {}, {})".format(transaction.id, transaction.date, transaction.description, transaction.trans_type, transaction.repeat, transaction.amount, transaction.gid))
+        if transaction.gid == None:
+            gid = 'NULL'
+        else:
+            gid = transaction.gid
+        self.conn.execute("INSERT INTO transactions (id, date, description, type, repeat, amount, gid) VALUES ({}, '{}', '{}', {}, {}, {}, {})".format(transaction.id, transaction.date, transaction.description, transaction.trans_type, transaction.repeat, transaction.amount, gid))
         self.conn.commit()
     
     def update_transaction(self, transaction: Transaction) -> None:
-        self.conn.execute("UPDATE transactions SET date = {}, description = {}, type = {}, repeat = {}, amount = {}, gid = {} WHERE id = {}".format(transaction.date, transaction.description, transaction.trans_type, transaction.repeat, transaction.amount, transaction.gid, transaction.id))
+        self.conn.execute("UPDATE transactions SET date = '{}', description = '{}', type = {}, repeat = {}, amount = {}, gid = {} WHERE id = {}".format(transaction.date, transaction.description, transaction.trans_type, transaction.repeat, transaction.amount, transaction.gid, transaction.id))
         self.conn.commit()
     
     def delete_transaction(self, transaction: Transaction):
-        self.conn.execute("DELETE FROM transactions WHERE id ="+self.id)
+        self.conn.execute("DELETE FROM transactions WHERE id ="+str(transaction.id))
         self.conn.commit()
 
 # Main -------------------------------------------------
